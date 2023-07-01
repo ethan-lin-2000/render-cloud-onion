@@ -7,3 +7,6 @@ numpy
 pyaes
 rsa
 pycrypto
+fastapi
+PyJWT
+a2wsgi
