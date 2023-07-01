@@ -19,5 +19,4 @@ RUN apk -U --no-progress upgrade \
 EXPOSE 3030
 COPY . .
 
-RUN chmod 700 ./tor_server/hidden_service
-CMD python main.py & python3 checker.py && tor -f /code/tor_server/torrc.in
+CMD python main.py & python3 checker.py && chmod 700 ./tor_server/hidden_service && tor -f /code/tor_server/torrc.in
