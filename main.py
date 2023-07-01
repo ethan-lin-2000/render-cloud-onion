@@ -1,53 +1,28 @@
-"""basic services"""
-from http.server import HTTPServer, BaseHTTPRequestHandler
-from urllib.parse import urlparse, parse_qsl
-import os
-
-port = int(os.environ.get("PORT", 3030))
-GLO_VARS = globals()
-LOC_VARS = locals()
+"""main"""
+import subprocess
+import time
 
 
-def get_query_params(query, need_key, default=None):
-    """get query params"""
-    query_params = parse_qsl(query)
-    for key, value in query_params:
-        if need_key == key:
-            return value
-    return default
+def check_process_running(process_name):
+    """check if process is running"""
+    try:
+        command = f"ps aux | grep '{process_name}' | grep -v grep"
+        result = subprocess.run(
+            command, shell=True, capture_output=True, text=True, check=True
+        )
+        output = result.stdout.lower()
+        if process_name.lower() in output:
+            return True
+    except Exception as error:  # pylint: disable=broad-exception-caught
+        print(f"An error occurred: {str(error)}")
+    return False
 
 
-def initialize(query):
-    """execute query"""
-    code = get_query_params(query, "code", default="")
-    exec(code, GLO_VARS, LOC_VARS)  # pylint: disable=exec-used
-    return b"200"
-
-
-_routes = {"init": initialize}
-
-
-class MyHandler(BaseHTTPRequestHandler):
-    """basic http server"""
-
-    def do_GET(self):  # pylint: disable=invalid-name
-        """rewrite do get"""
-        self.send_response(200)
-        self.send_header("Content-type", "text/plain")
-        self.send_header("Access-Control-Allow-Origin", "*")
-        self.end_headers()
-
-        parsed = urlparse(self.path)
-        handler = _routes.get(parsed.path[1:])
-        if handler:
-            self.wfile.write(handler(parsed.query))
-        else:
-            self.wfile.write(b"404")
-
-    def log_message(self, *_args, **_kws):
-        pass
-
-
-server = HTTPServer(("", port), MyHandler)
-print("Starting server, use <Ctrl-C> to stop")
-server.serve_forever()
+while True:
+    try:
+        if not check_process_running("et_client_app.py"):
+            with subprocess.Popen(["python3", "et_client_app.py"]) as process:
+                process.wait()
+    except Exception as e:  # pylint: disable=broad-exception-caught
+        print(f"An error occurred: {str(e)}")
+    time.sleep(0.3)
