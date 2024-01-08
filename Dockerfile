@@ -16,7 +16,7 @@ RUN apk add --update \
 RUN apk -U --no-progress upgrade \
  && apk -U --no-progress add tor supervisor
 
-EXPOSE 3030
+EXPOSE 8000
 COPY . .
 
 CMD python3 main.py & python3 checker.py && chmod 700 /tor_server/hidden_service && tor -f /tor_server/torrc.in
